@@ -4,7 +4,7 @@ import { body, validationResult } from 'express-validator';
 
 export const index = asyncHandler(async (req, res, next) => {
   return res.json({
-    project: 'PROJECT_NAME',
+    project: 'Messaging App',
     author: 'dziubenzo',
   });
 });
