@@ -3,11 +3,13 @@ import User from '../models/User.js';
 import asyncHandler from 'express-async-handler';
 import { body, validationResult } from 'express-validator';
 import bcrypt from 'bcryptjs';
+import passport from 'passport';
 import {
   checkPasswordsEquality,
   checkUsernameAvailability,
 } from '../config/middleware.js';
 import { getFirstErrorMsg, getUserId } from '../config/helpers.js';
+import { isAuth } from '../config/passport.js';
 
 // GET all users
 export const getAllUsers = asyncHandler(async (req, res, next) => {
@@ -60,7 +62,7 @@ export const postCreateUser = [
         .status(400)
         .json('Something went wrong while creating a user. Please try again.');
     }
-    
+
     // Get all user ids from DB
     const userIds = await User.find({}, '-_id user_id').lean().exec();
 
@@ -84,13 +86,25 @@ export const postCreateUser = [
 ];
 
 // GET user
-export const getUser = asyncHandler(async (req, res, next) => {
-  const { userId } = req.params;
-  const user = await User.findOne({ user_id: userId }).lean().exec();
+export const getUser = [
+  isAuth,
+  asyncHandler(async (req, res, next) => {
+    const { userId } = req.params;
+    const user = await User.findOne({ user_id: userId }).lean().exec();
 
-  if (!user) {
-    return res.json('User not found')
-  }
+    if (!user) {
+      return res.json('User not found');
+    }
 
-  return res.json(user);
-});
+    return res.json(user);
+  }),
+];
+
+// POST login user
+export const postLoginUser = [
+  passport.authenticate('local'),
+
+  asyncHandler(async (req, res, next) => {
+    return res.json(req.user.user_id);
+  }),
+];

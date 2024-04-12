@@ -6,6 +6,15 @@ import helmet from 'helmet';
 import mongoose from 'mongoose';
 import RateLimit from 'express-rate-limit';
 
+// Passport imports
+import session from 'express-session';
+import passport from 'passport';
+import {
+  localStrategy,
+  serialiseFunction,
+  deserialiseFunction,
+} from './config/passport.js';
+
 // Route imports
 import indexRouter from './routes/index.js';
 import userRouter from './routes/user.js';
@@ -33,16 +42,29 @@ const limiter = RateLimit({
 // CORS options - allowed site(s)
 // No '/' at the end
 const corsOptions = {
-  origin: '*',
+  origin: 'http://localhost:5173',
+  credentials: true,
 };
 
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cors(corsOptions));
+app.use(
+  session({
+    secret: process.env.SECRET,
+    resave: false,
+    saveUninitialized: true,
+  })
+);
+app.use(passport.session());
 app.use(compression());
 app.use(helmet());
 app.use(limiter);
+
+passport.use(localStrategy);
+passport.serializeUser(serialiseFunction);
+passport.deserializeUser(deserialiseFunction);
 
 // Routes
 app.use('/', indexRouter);
