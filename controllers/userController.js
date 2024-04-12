@@ -60,6 +60,7 @@ export const postCreateUser = [
         .status(400)
         .json('Something went wrong while creating a user. Please try again.');
     }
+    
     // Get all user ids from DB
     const userIds = await User.find({}, '-_id user_id').lean().exec();
 
@@ -81,3 +82,15 @@ export const postCreateUser = [
     return res.json('User created successfully!');
   }),
 ];
+
+// GET user
+export const getUser = asyncHandler(async (req, res, next) => {
+  const { userId } = req.params;
+  const user = await User.findOne({ user_id: userId }).lean().exec();
+
+  if (!user) {
+    return res.json('User not found')
+  }
+
+  return res.json(user);
+});
