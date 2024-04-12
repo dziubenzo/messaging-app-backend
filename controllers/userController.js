@@ -108,3 +108,12 @@ export const postLoginUser = [
     return res.json(req.user.user_id);
   }),
 ];
+
+// POST check auth
+export const postCheckAuth = asyncHandler(async (req, res, next) => {
+  if (req.isAuthenticated()) {
+    return res.json(req.user.user_id);
+  } else {
+    return res.status(401).json('You are not authorised');
+  }
+});
