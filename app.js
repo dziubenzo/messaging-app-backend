@@ -8,6 +8,7 @@ import RateLimit from 'express-rate-limit';
 
 // Route imports
 import indexRouter from './routes/index.js';
+import userRouter from './routes/user.js';
 
 const app = express();
 
@@ -45,6 +46,7 @@ app.use(limiter);
 
 // Routes
 app.use('/', indexRouter);
+app.use('/users', userRouter);
 
 // Error handler
 app.use((err, req, res, next) => {
