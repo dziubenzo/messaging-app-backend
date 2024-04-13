@@ -5,6 +5,7 @@ import compression from 'compression';
 import helmet from 'helmet';
 import mongoose from 'mongoose';
 import RateLimit from 'express-rate-limit';
+import MongoStore from 'connect-mongo';
 
 // Passport imports
 import session from 'express-session';
@@ -55,12 +56,19 @@ app.use(
     secret: process.env.SECRET,
     resave: false,
     saveUninitialized: true,
+    cookie: {
+      maxAge: 1000 * 60 * 60 * 24 * 3, // 3 days
+    },
+    store: MongoStore.create({ mongoUrl: mongoDB }),
   })
 );
 app.use(passport.session());
 app.use(compression());
 app.use(helmet());
-app.use(limiter);
+/* 
+ENABLE LATER
+*/
+// app.use(limiter);
 
 passport.use(localStrategy);
 passport.serializeUser(serialiseFunction);
