@@ -12,11 +12,14 @@ import { getFirstErrorMsg, getUserId } from '../config/helpers.js';
 import { isAuth } from '../config/passport.js';
 
 // GET all users
-export const getAllUsers = asyncHandler(async (req, res, next) => {
-  const allUsers = await User.find({}).lean().exec();
+export const getAllUsers = [
+  isAuth,
+  asyncHandler(async (req, res, next) => {
+    const allUsers = await User.find({}).lean().exec();
 
-  return res.json(allUsers);
-});
+    return res.json(allUsers);
+  }),
+];
 
 // POST create user
 export const postCreateUser = [
@@ -114,6 +117,6 @@ export const postCheckAuth = asyncHandler(async (req, res, next) => {
   if (req.isAuthenticated()) {
     return res.json(req.user.user_id);
   } else {
-    return res.status(401).json('You are not authorised');
+    return res.status(401).json('You are not authenticated');
   }
 });
