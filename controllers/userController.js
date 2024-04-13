@@ -10,6 +10,7 @@ import {
 } from '../config/middleware.js';
 import { getFirstErrorMsg, getUserId } from '../config/helpers.js';
 import { isAuth } from '../config/passport.js';
+import { modifyReqUser } from '../config/helpers.js';
 
 // GET all users
 export const getAllUsers = [
@@ -110,14 +111,16 @@ export const postLoginUser = [
   passport.authenticate('local'),
 
   asyncHandler(async (req, res, next) => {
-    return res.json(req.user.user_id);
+    const safeUser = modifyReqUser(req.user);
+    return res.json(safeUser);
   }),
 ];
 
 // POST check auth
 export const postCheckAuth = asyncHandler(async (req, res, next) => {
   if (req.isAuthenticated()) {
-    return res.json(req.user.user_id);
+    const safeUser = modifyReqUser(req.user);
+    return res.json(safeUser);
   } else {
     return res.status(401).json('You are not authenticated');
   }
