@@ -15,7 +15,7 @@ import { isAuth } from '../config/passport.js';
 export const getAllUsers = [
   isAuth,
   asyncHandler(async (req, res, next) => {
-    const allUsers = await User.find({}).lean().exec();
+    const allUsers = await User.find({}, '-_id -password').lean().exec();
 
     return res.json(allUsers);
   }),
@@ -93,7 +93,9 @@ export const getUser = [
   isAuth,
   asyncHandler(async (req, res, next) => {
     const { userId } = req.params;
-    const user = await User.findOne({ user_id: userId }).lean().exec();
+    const user = await User.findOne({ user_id: userId }, '-id -password')
+      .lean()
+      .exec();
 
     if (!user) {
       return res.json('User not found');
