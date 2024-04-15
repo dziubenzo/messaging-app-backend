@@ -127,8 +127,14 @@ export const putAddContact = [
     user.contacts.push(contactId);
     await user.save();
 
+    // Get user from DB with populated contacts and without sensitive fields
+    const updatedUser = await User.findOne(
+      { user_id: userId },
+      '-password'
+    ).populate({ path: 'contacts', select: '-password' });
+
     // Return updated logged in user
-    return res.json(user);
+    return res.json(updatedUser);
   }),
 ];
 
