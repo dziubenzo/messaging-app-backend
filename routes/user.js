@@ -4,7 +4,8 @@ import {
   getUser,
   postCreateUser,
   postLoginUser,
-  postCheckAuth
+  postCheckAuth,
+  putAddContact,
 } from '../controllers/userController.js';
 
 const router = Router();
@@ -18,10 +19,13 @@ router.post('/', postCreateUser);
 // GET user
 router.get('/:userId', getUser);
 
+// PUT add contact
+router.put('/:userId/add-contact', putAddContact);
+
 // POST login user
 router.post('/login', postLoginUser);
 
 // POST check auth
-router.post('/auth', postCheckAuth)
+router.post('/auth', postCheckAuth);
 
 export default router;

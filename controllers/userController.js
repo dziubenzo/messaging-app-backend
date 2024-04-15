@@ -16,8 +16,10 @@ import { modifyReqUser } from '../config/helpers.js';
 export const getAllUsers = [
   isAuth,
   asyncHandler(async (req, res, next) => {
-    const allUsers = await User.find({}, '-_id -password').lean().exec();
-
+    const allUsers = await User.find({}, '-password')
+      .populate('contacts')
+      .lean()
+      .exec();
     return res.json(allUsers);
   }),
 ];
@@ -102,6 +104,31 @@ export const getUser = [
       return res.json('User not found');
     }
 
+    return res.json(user);
+  }),
+];
+
+// PUT add contact
+export const putAddContact = [
+  isAuth,
+  body('contact_id').isMongoId().withMessage('Invalid user id'),
+  asyncHandler(async (req, res, next) => {
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+      // Return the first validation error message if there are any errors
+      const firstErrorMsg = getFirstErrorMsg(errors);
+      return res.status(400).json(firstErrorMsg);
+    }
+    const { userId } = req.params;
+    const contactId = req.body.contact_id;
+
+    // Add a contact to logged in user's contacts array
+    const user = await User.findOne({ user_id: userId });
+    user.contacts.push(contactId);
+    await user.save();
+
+    // Return updated logged in user
     return res.json(user);
   }),
 ];
