@@ -169,6 +169,36 @@ export const deleteRemoveContact = [
   }),
 ];
 
+// PUT change status icon
+export const putChangeStatusIcon = [
+  isAuth,
+  body('image_url').isURL().withMessage('Invalid image URL'),
+  asyncHandler(async (req, res, next) => {
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+      // Return the first validation error message if there are any errors
+      const firstErrorMsg = getFirstErrorMsg(errors);
+      return res.status(400).json(firstErrorMsg);
+    }
+
+    // Update logged in user's status_icon field
+    const { userId } = req.params;
+    const imageURL = req.body.image_url;
+    
+    await User.findOneAndUpdate({ user_id: userId }, { status_icon: imageURL });
+
+    // Get user from DB with populated contacts and without sensitive fields
+    const updatedUser = await User.findOne(
+      { user_id: userId },
+      '-password'
+    ).populate({ path: 'contacts', select: '-password' });
+
+    // Return updated logged in user
+    return res.json(updatedUser);
+  }),
+];
+
 // POST login user
 export const postLoginUser = [
   passport.authenticate('local'),

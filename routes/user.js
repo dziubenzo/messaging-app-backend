@@ -8,6 +8,7 @@ import {
   putAddContact,
   deleteRemoveContact,
   postLogoutUser,
+  putChangeStatusIcon
 } from '../controllers/userController.js';
 
 const router = Router();
@@ -26,6 +27,9 @@ router.put('/:userId/add-contact', putAddContact);
 
 // DELETE remove contact
 router.delete('/:userId/remove-contact', deleteRemoveContact);
+
+// PUT change status icon
+router.put('/:userId/change-status-icon', putChangeStatusIcon)
 
 // POST login user
 router.post('/login', postLoginUser);
