@@ -184,6 +184,19 @@ export const postLoginUser = [
   }),
 ];
 
+// POST logout user
+export const postLogoutUser = [
+  isAuth,
+  asyncHandler(async (req, res, next) => {
+    req.logout((err) => {
+      if (err) {
+        return next(err);
+      }
+      return res.json('Logout successful');
+    });
+  }),
+];
+
 // POST check auth
 export const postCheckAuth = asyncHandler(async (req, res, next) => {
   if (req.isAuthenticated()) {
