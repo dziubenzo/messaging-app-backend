@@ -10,7 +10,6 @@ import {
 } from '../config/middleware.js';
 import { getFirstErrorMsg, getUserId } from '../config/helpers.js';
 import { isAuth } from '../config/passport.js';
-import { modifyReqUser } from '../config/helpers.js';
 
 // GET all users
 export const getAllUsers = [
@@ -138,16 +137,24 @@ export const postLoginUser = [
   passport.authenticate('local'),
 
   asyncHandler(async (req, res, next) => {
-    const safeUser = modifyReqUser(req.user);
-    return res.json(safeUser);
+    // Get logged in user from DB with populated contacts
+    // Populate() method does not work in Local Strategy, meaning req.user does not contain contacts data, so I need to query DB again
+    const loggedInUser = await User.findOne(
+      { username: req.user.username },
+      '-password'
+    ).populate({ path: 'contacts', select: '-password' });
+    return res.json(loggedInUser);
   }),
 ];
 
 // POST check auth
 export const postCheckAuth = asyncHandler(async (req, res, next) => {
   if (req.isAuthenticated()) {
-    const safeUser = modifyReqUser(req.user);
-    return res.json(safeUser);
+    const loggedInUser = await User.findOne(
+      { username: req.user.username },
+      '-password'
+    ).populate({ path: 'contacts', select: '-password' });
+    return res.json(loggedInUser);
   } else {
     return res.status(401).json('You are not authenticated');
   }

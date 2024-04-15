@@ -9,12 +9,3 @@ export const getUserId = () => {
   const max = Math.floor(9999999);
   return Math.floor(Math.random() * (max - min + 1)) + min;
 };
-
-// Modify req.user so that it does not include certain properties
-export const modifyReqUser = (user) => {
-  const safeUser = { ...user._doc };
-  delete safeUser.password;
-  delete safeUser._id;
-  delete safeUser.__v;
-  return safeUser;
-};
