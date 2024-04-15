@@ -138,6 +138,37 @@ export const putAddContact = [
   }),
 ];
 
+// DELETE remove contact
+export const deleteRemoveContact = [
+  isAuth,
+  body('contact_id').isMongoId().withMessage('Invalid user id'),
+  asyncHandler(async (req, res, next) => {
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+      // Return the first validation error message if there are any errors
+      const firstErrorMsg = getFirstErrorMsg(errors);
+      return res.status(400).json(firstErrorMsg);
+    }
+    const { userId } = req.params;
+    const contactId = req.body.contact_id;
+
+    // Remove a contact from logged in user's contacts array
+    const user = await User.findOne({ user_id: userId });
+    user.contacts.pull(contactId);
+    await user.save();
+
+    // Get user from DB with populated contacts and without sensitive fields
+    const updatedUser = await User.findOne(
+      { user_id: userId },
+      '-password'
+    ).populate({ path: 'contacts', select: '-password' });
+
+    // Return updated logged in user
+    return res.json(updatedUser);
+  }),
+];
+
 // POST login user
 export const postLoginUser = [
   passport.authenticate('local'),

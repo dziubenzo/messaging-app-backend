@@ -6,6 +6,7 @@ import {
   postLoginUser,
   postCheckAuth,
   putAddContact,
+  deleteRemoveContact,
 } from '../controllers/userController.js';
 
 const router = Router();
@@ -21,6 +22,9 @@ router.get('/:userId', getUser);
 
 // PUT add contact
 router.put('/:userId/add-contact', putAddContact);
+
+// DELETE remove contact
+router.delete('/:userId/remove-contact', deleteRemoveContact);
 
 // POST login user
 router.post('/login', postLoginUser);
