@@ -20,7 +20,15 @@ import {
 import indexRouter from './routes/index.js';
 import userRouter from './routes/user.js';
 
+// CORS options - allowed site(s)
+// No '/' at the end
+const corsOptions = {
+  origin: 'http://localhost:5173',
+  credentials: true,
+};
+
 const app = express();
+app.use(cors(corsOptions));
 
 // MongoDB connection
 mongoose.set('strictQuery', false);
@@ -40,17 +48,9 @@ const limiter = RateLimit({
   validate: { xForwardedForHeader: false },
 });
 
-// CORS options - allowed site(s)
-// No '/' at the end
-const corsOptions = {
-  origin: 'http://localhost:5173',
-  credentials: true,
-};
-
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-app.use(cors(corsOptions));
 app.use(
   session({
     secret: process.env.SECRET,
