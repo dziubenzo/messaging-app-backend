@@ -40,7 +40,13 @@ const io = new Server(httpServer, {
 });
 
 io.on('connection', (socket) => {
-  console.log(socket.id);
+  // Send back sender's user ID and status icon URL to all sockets except the sender
+  socket.on('change status icon', (userId, imageURL) => {
+    if (!userId || !imageURL) {
+      return;
+    }
+    socket.broadcast.emit('update status icon', userId, imageURL);
+  });
 });
 
 app.use(cors(corsOptions));
