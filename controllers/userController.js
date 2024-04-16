@@ -15,10 +15,7 @@ import { isAuth } from '../config/passport.js';
 export const getAllUsers = [
   isAuth,
   asyncHandler(async (req, res, next) => {
-    const allUsers = await User.find({}, '-password')
-      .populate('contacts')
-      .lean()
-      .exec();
+    const allUsers = await User.find({}, '-password -contacts').lean().exec();
     return res.json(allUsers);
   }),
 ];
@@ -185,7 +182,7 @@ export const putChangeStatusIcon = [
     // Update logged in user's status_icon field
     const { userId } = req.params;
     const imageURL = req.body.image_url;
-    
+
     await User.findOneAndUpdate({ user_id: userId }, { status_icon: imageURL });
 
     // Get user from DB with populated contacts and without sensitive fields
