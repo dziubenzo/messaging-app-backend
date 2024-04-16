@@ -7,6 +7,10 @@ import mongoose from 'mongoose';
 import RateLimit from 'express-rate-limit';
 import MongoStore from 'connect-mongo';
 
+// Socket.io imports
+import { createServer } from 'http';
+import { Server } from 'socket.io';
+
 // Passport imports
 import session from 'express-session';
 import passport from 'passport';
@@ -28,6 +32,17 @@ const corsOptions = {
 };
 
 const app = express();
+
+// Initialise both http and Socket.io servers
+const httpServer = createServer(app);
+const io = new Server(httpServer, {
+  cors: { origin: 'http://localhost:5173' },
+});
+
+io.on('connection', (socket) => {
+  console.log(socket.id);
+});
+
 app.use(cors(corsOptions));
 
 // MongoDB connection
@@ -86,6 +101,6 @@ app.use((err, req, res, next) => {
 });
 
 // Server listener
-app.listen(process.env.PORT, () => {
+httpServer.listen(process.env.PORT, () => {
   console.log(`Server listening on port ${process.env.PORT}...`);
 });
