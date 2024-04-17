@@ -7,7 +7,7 @@ import mongoose from 'mongoose';
 import RateLimit from 'express-rate-limit';
 import MongoStore from 'connect-mongo';
 
-// Socket.io imports
+// Socket.IO imports
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 
@@ -33,19 +33,28 @@ const corsOptions = {
 
 const app = express();
 
-// Initialise both http and Socket.io servers
+// Initialise both http and Socket.IO servers
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
   cors: { origin: 'http://localhost:5173' },
 });
 
 io.on('connection', (socket) => {
-  // Send back sender's user ID and status icon URL to all sockets except the sender
+  // Send back what's been sent by the sender to every socket except for the sender
   socket.on('change status icon', (userId, imageURL) => {
     if (!userId || !imageURL) {
       return;
     }
     socket.broadcast.emit('update status icon', userId, imageURL);
+  });
+
+  socket.on('change username/text status', (userId, username, textStatus) => {
+    socket.broadcast.emit(
+      'update username/text status',
+      userId,
+      username,
+      textStatus
+    );
   });
 });
 
