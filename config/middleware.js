@@ -17,7 +17,7 @@ export const checkUsernameAvailability = async (value) => {
 // Check username to be updated for availability
 // Pass through the case when username is equal to user's current username
 export const checkUpdatedUsername = async (value, { req }) => {
-  const { username } = await User.findOne(
+  const user = await User.findOne(
     {
       username: { $regex: value, $options: 'i' },
     },
@@ -26,12 +26,12 @@ export const checkUpdatedUsername = async (value, { req }) => {
     .lean()
     .exec();
   if (
-    username &&
-    username.toLowerCase() !== req.body.current_username.toLowerCase()
+    !user ||
+    user.username.toLowerCase() === req.body.current_username.toLowerCase()
   ) {
-    return Promise.reject();
+    return Promise.resolve();
   }
-  return Promise.resolve();
+  return Promise.reject();
 };
 
 // Check if passwords match

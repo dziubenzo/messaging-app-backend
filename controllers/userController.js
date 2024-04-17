@@ -27,21 +27,18 @@ export const postCreateUser = [
     .trim()
     .isLength({ min: 3, max: 16 })
     .withMessage('Username must contain between 3 and 16 characters')
-    .escape()
     .custom(checkUsernameAvailability)
     .withMessage('Username already taken'),
   body('password')
     .trim()
     .isLength({ min: 3, max: 16 })
-    .withMessage('Password must contain between 3 and 16 characters')
-    .escape(),
+    .withMessage('Password must contain between 3 and 16 characters'),
   body('confirm_password')
     .trim()
     .isLength({ min: 3, max: 16 })
     .withMessage(
       'Password confirmation must contain between 3 and 16 characters'
     )
-    .escape()
     .custom(checkPasswordsEquality)
     .withMessage('Passwords do not match'),
 
@@ -204,14 +201,12 @@ export const putUpdateUser = [
     .trim()
     .isLength({ min: 3, max: 16 })
     .withMessage('Username must contain between 3 and 16 characters')
-    .escape()
     .custom(checkUpdatedUsername)
     .withMessage('Username already taken'),
   body('status_text')
     .trim()
     .isLength({ max: 70 })
-    .withMessage('Status cannot exceed 70 characters')
-    .escape(),
+    .withMessage('Status cannot exceed 70 characters'),
   asyncHandler(async (req, res, next) => {
     const errors = validationResult(req);
 

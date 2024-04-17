@@ -29,6 +29,7 @@ const UserSchema = new Schema({
   status_text: {
     type: String,
     maxLength: 70,
+    default: 'New TT user here!',
   },
   contacts: [
     {
