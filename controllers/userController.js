@@ -7,6 +7,7 @@ import passport from 'passport';
 import {
   checkPasswordsEquality,
   checkUsernameAvailability,
+  checkUpdatedUsername,
 } from '../config/middleware.js';
 import { getFirstErrorMsg, getUserId } from '../config/helpers.js';
 import { isAuth } from '../config/passport.js';
@@ -204,7 +205,7 @@ export const putUpdateUser = [
     .isLength({ min: 3, max: 16 })
     .withMessage('Username must contain between 3 and 16 characters')
     .escape()
-    .custom(checkUsernameAvailability)
+    .custom(checkUpdatedUsername)
     .withMessage('Username already taken'),
   body('status_text')
     .trim()
