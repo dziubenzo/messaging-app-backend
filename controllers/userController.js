@@ -196,6 +196,51 @@ export const putChangeStatusIcon = [
   }),
 ];
 
+// PUT update user
+export const putUpdateUser = [
+  isAuth,
+  body('username')
+    .trim()
+    .isLength({ min: 3, max: 16 })
+    .withMessage('Username must contain between 3 and 16 characters')
+    .escape()
+    .custom(checkUsernameAvailability)
+    .withMessage('Username already taken'),
+  body('status_text')
+    .trim()
+    .isLength({ max: 70 })
+    .withMessage('Status cannot exceed 70 characters')
+    .escape(),
+  asyncHandler(async (req, res, next) => {
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+      // Return the first validation error message if there are any errors
+      const firstErrorMsg = getFirstErrorMsg(errors);
+      return res.status(400).json(firstErrorMsg);
+    }
+
+    // Update logged in user's username and status_text fields
+    const { userId } = req.params;
+    const username = req.body.username;
+    const statusText = req.body.status_text;
+
+    await User.findOneAndUpdate(
+      { user_id: userId },
+      { username, status_text: statusText }
+    );
+
+    // Get user from DB with populated contacts and without sensitive fields
+    const updatedUser = await User.findOne(
+      { user_id: userId },
+      '-password'
+    ).populate({ path: 'contacts', select: '-password' });
+
+    // Return updated logged in user
+    return res.json(updatedUser);
+  }),
+];
+
 // POST login user
 export const postLoginUser = [
   passport.authenticate('local'),

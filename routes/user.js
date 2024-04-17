@@ -8,7 +8,8 @@ import {
   putAddContact,
   deleteRemoveContact,
   postLogoutUser,
-  putChangeStatusIcon
+  putChangeStatusIcon,
+  putUpdateUser,
 } from '../controllers/userController.js';
 
 const router = Router();
@@ -29,7 +30,10 @@ router.put('/:userId/add-contact', putAddContact);
 router.delete('/:userId/remove-contact', deleteRemoveContact);
 
 // PUT change status icon
-router.put('/:userId/change-status-icon', putChangeStatusIcon)
+router.put('/:userId/change-status-icon', putChangeStatusIcon);
+
+// PUT update user
+router.put('/:userId/update', putUpdateUser);
 
 // POST login user
 router.post('/login', postLoginUser);
