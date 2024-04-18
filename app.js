@@ -23,6 +23,7 @@ import {
 // Route imports
 import indexRouter from './routes/index.js';
 import userRouter from './routes/user.js';
+import messageRouter from './routes/message.js';
 
 // CORS options - allowed site(s)
 // No '/' at the end
@@ -107,6 +108,7 @@ passport.deserializeUser(deserialiseFunction);
 // Routes
 app.use('/', indexRouter);
 app.use('/users', userRouter);
+app.use('/messages', messageRouter);
 
 // Error handler
 app.use((err, req, res, next) => {
