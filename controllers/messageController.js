@@ -26,13 +26,13 @@ export const getMessages = [
       Message.find({ sender: to, recipient: from }).lean().exec(),
     ]);
 
-    // Return a 404 message if no messages found in the DB
-    if (!messagesSent.length && !messagesReceived.length) {
-      return res.json('No messages to show.');
-    }
+    // Combine messages and sort them in ascending order
+    const messagesCombined = messagesSent
+      .concat(messagesReceived)
+      .sort((a, b) => (a.date < b.date ? -1 : 1));
 
     // Return messages
-    return res.json({ messagesSent, messagesReceived });
+    return res.json(messagesCombined);
   }),
 ];
 
