@@ -57,6 +57,10 @@ io.on('connection', (socket) => {
       textStatus
     );
   });
+
+  socket.on('send message', (userId, message) => {
+    socket.broadcast.emit('receive message', userId, message);
+  });
 });
 
 app.use(cors(corsOptions));
