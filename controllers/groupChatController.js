@@ -6,9 +6,27 @@ import { getFirstErrorMsg } from '../config/helpers.js';
 import { checkNameAvailability } from '../config/middleware.js';
 
 // GET group chats
-export const getGroupChats = asyncHandler(async (req, res, next) => {
-  return res.json('😉️');
-});
+export const getGroupChats = [
+  query('member').isMongoId().withMessage('Invalid query parameter'),
+
+  asyncHandler(async (req, res, next) => {
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+      // Return the first validation error message if there are any errors
+      const firstErrorMsg = getFirstErrorMsg(errors);
+      return res.status(400).json(firstErrorMsg);
+    }
+
+    const memberID = req.query.member;
+
+    const groupChats = await GroupChat.find({ members: memberID }, '-messages')
+      .lean()
+      .exec();
+
+    return res.json(groupChats);
+  }),
+];
 
 // POST create group chat
 export const postCreateGroupChat = [

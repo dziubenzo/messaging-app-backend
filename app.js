@@ -41,6 +41,7 @@ const io = new Server(httpServer, {
   cors: { origin: 'http://localhost:5173' },
 });
 
+// Socket.IO event listeners and emitters
 io.on('connection', (socket) => {
   // Send back what's been sent by the sender to every socket except for the sender
   socket.on('change status icon', (userId, imageURL) => {
