@@ -1,7 +1,7 @@
 import User from '../models/User.js';
+import GroupChat from '../models/GroupChat.js';
 
-// Check if the username provided is available
-// Treat dziubenzo and Dziubenzo as the same
+// Check if the username provided is available (case-insensitive)
 export const checkUsernameAvailability = async (value) => {
   const usernameTaken = await User.exists({
     username: { $regex: value, $options: 'i' },
@@ -37,4 +37,17 @@ export const checkUpdatedUsername = async (value, { req }) => {
 // Check if passwords match
 export const checkPasswordsEquality = (value, { req }) => {
   return value === req.body.password;
+};
+
+// Check if the group chat name provided is available (case-insensitive)
+export const checkNameAvailability = async (value) => {
+  const nameTaken = await GroupChat.exists({
+    name: { $regex: value, $options: 'i' },
+  })
+    .lean()
+    .exec();
+  if (nameTaken) {
+    return Promise.reject();
+  }
+  return Promise.resolve();
 };

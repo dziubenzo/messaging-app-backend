@@ -105,7 +105,7 @@ export const getUser = [
 // PUT add contact
 export const putAddContact = [
   isAuth,
-  body('contact_id').isMongoId().withMessage('Invalid user id'),
+  body('contact_id').isMongoId().withMessage('Invalid user ID'),
   asyncHandler(async (req, res, next) => {
     const errors = validationResult(req);
 

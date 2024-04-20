@@ -24,6 +24,7 @@ import {
 import indexRouter from './routes/index.js';
 import userRouter from './routes/user.js';
 import messageRouter from './routes/message.js';
+import groupChatRouter from './routes/groupChat.js';
 
 // CORS options - allowed site(s)
 // No '/' at the end
@@ -113,6 +114,7 @@ passport.deserializeUser(deserialiseFunction);
 app.use('/', indexRouter);
 app.use('/users', userRouter);
 app.use('/messages', messageRouter);
+app.use('/group-chats', groupChatRouter);
 
 // Error handler
 app.use((err, req, res, next) => {
