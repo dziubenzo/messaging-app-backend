@@ -102,15 +102,64 @@ export const getGroupChatMessages = [
       return res.status(400).json(firstErrorMsg);
     }
 
-    const groupChatId = req.params.groupChatId;
+    const groupChatID = req.params.groupChatId;
 
     const { messages } = await GroupChat.findOne(
-      { _id: groupChatId },
+      { _id: groupChatID },
       '-_id messages'
     )
+      .populate('messages.sender', '-_id username')
       .lean()
       .exec();
 
     return res.json(messages);
+  }),
+];
+
+// POST create group chat message
+export const postCreateGroupChatMessage = [
+  param('groupChatId').isMongoId().withMessage('Invalid URL parameter'),
+  body('sender')
+    .isMongoId()
+    .withMessage('Sender field must be a valid Mongo ID'),
+  body('text')
+    .trim()
+    .isLength({ min: 1, max: 5000 })
+    .withMessage('Message must be present and cannot exceed 5000 characters'),
+
+  asyncHandler(async (req, res, next) => {
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+      // Return the first validation error message if there are any errors
+      const firstErrorMsg = getFirstErrorMsg(errors);
+      return res.status(400).json(firstErrorMsg);
+    }
+
+    const groupChatID = req.params.groupChatId;
+    const senderID = req.body.sender;
+    const text = req.body.text;
+
+    const newMessage = {
+      sender: senderID,
+      text: text,
+      date: Date.now(),
+    };
+
+    // Add the message to the group chat messages array and return updated document
+    const updatedGroupChat = await GroupChat.findByIdAndUpdate(
+      groupChatID,
+      {
+        $push: {
+          messages: newMessage,
+        },
+      },
+      { upsert: true }
+    ).populate('messages.sender', '-_id username');
+
+    // Return added message
+    return res.json(
+      updatedGroupChat.messages[updatedGroupChat.messages.length - 1]
+    );
   }),
 ];
