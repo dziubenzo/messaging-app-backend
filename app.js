@@ -63,6 +63,10 @@ io.on('connection', (socket) => {
   socket.on('send message', (userId, message) => {
     socket.broadcast.emit('receive message', userId, message);
   });
+
+  socket.on('delete group chat', (groupChat) => {
+    socket.broadcast.emit('update group chats', groupChat);
+  });
 });
 
 app.use(cors(corsOptions));
