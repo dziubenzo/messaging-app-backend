@@ -21,6 +21,7 @@ export const getGroupChats = [
     const memberID = req.query.member;
 
     const groupChats = await GroupChat.find({ members: memberID }, '-messages')
+      .populate('members', 'username user_id')
       .lean()
       .exec();
 
