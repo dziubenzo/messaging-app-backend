@@ -84,7 +84,33 @@ export const deleteGroupChat = [
     const groupChatId = req.params.groupChatId;
 
     const { name } = await GroupChat.findByIdAndDelete(groupChatId);
-    
+
     return res.json(`Group chat ${name} deleted successfully!`);
+  }),
+];
+
+// GET group chat messages
+export const getGroupChatMessages = [
+  param('groupChatId').isMongoId().withMessage('Invalid URL parameter'),
+
+  asyncHandler(async (req, res, next) => {
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+      // Return the first validation error message if there are any errors
+      const firstErrorMsg = getFirstErrorMsg(errors);
+      return res.status(400).json(firstErrorMsg);
+    }
+
+    const groupChatId = req.params.groupChatId;
+
+    const { messages } = await GroupChat.findOne(
+      { _id: groupChatId },
+      '-_id messages'
+    )
+      .lean()
+      .exec();
+
+    return res.json(messages);
   }),
 ];

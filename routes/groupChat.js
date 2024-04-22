@@ -3,6 +3,7 @@ import {
   getGroupChats,
   postCreateGroupChat,
   deleteGroupChat,
+  getGroupChatMessages
 } from '../controllers/groupChatController.js';
 import { isAuth } from '../config/passport.js';
 
@@ -18,5 +19,8 @@ router.post('/', postCreateGroupChat);
 
 // DELETE group chat
 router.delete('/:groupChatId', deleteGroupChat);
+
+// GET group chat messages
+router.get('/:groupChatId', getGroupChatMessages)
 
 export default router;
