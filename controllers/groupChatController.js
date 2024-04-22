@@ -108,7 +108,7 @@ export const getGroupChatMessages = [
       { _id: groupChatID },
       '-_id messages'
     )
-      .populate('messages.sender', '-_id username')
+      .populate('messages.sender', 'username')
       .lean()
       .exec();
 
@@ -154,8 +154,8 @@ export const postCreateGroupChatMessage = [
           messages: newMessage,
         },
       },
-      { upsert: true }
-    ).populate('messages.sender', '-_id username');
+      { new: true, upsert: true }
+    ).populate('messages.sender', 'username');
 
     // Return added message
     return res.json(

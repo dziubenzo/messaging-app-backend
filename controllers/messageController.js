@@ -22,8 +22,14 @@ export const getMessages = [
 
     // Get messages from user A to user B and from user B to user A
     const [messagesSent, messagesReceived] = await Promise.all([
-      Message.find({ sender: from, recipient: to }).lean().exec(),
-      Message.find({ sender: to, recipient: from }).lean().exec(),
+      Message.find({ sender: from, recipient: to })
+        .populate('sender', 'username')
+        .lean()
+        .exec(),
+      Message.find({ sender: to, recipient: from })
+        .populate('sender', 'username')
+        .lean()
+        .exec(),
     ]);
 
     // Combine messages and sort them in ascending order
@@ -70,9 +76,12 @@ export const postCreateMessage = [
       date: Date.now(),
     });
 
-    await newMessage.save();
+    // Save new message to DB and return it with populated sender field
+    const newMessagePopulated = await (
+      await newMessage.save()
+    ).populate('sender', 'username');
 
     // Return new message
-    return res.json(newMessage);
+    return res.json(newMessagePopulated);
   }),
 ];
