@@ -37,6 +37,7 @@ export const postCreateGroupChat = [
     .withMessage('Name must contain between 3 and 32 characters')
     .custom(checkNameAvailability)
     .withMessage('Group chat name already taken'),
+  body('created_by').isMongoId().withMessage('Invalid user ID'),
   body('members')
     .isArray({ min: 3 })
     .withMessage('Members must be an array of at least 3 elements'),
@@ -52,10 +53,12 @@ export const postCreateGroupChat = [
     }
 
     const name = req.body.name;
+    const created_by = req.body.created_by;
     const members = req.body.members;
 
     const newGroupChat = new GroupChat({
       name,
+      created_by,
       members,
     });
 
