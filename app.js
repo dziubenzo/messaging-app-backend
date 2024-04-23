@@ -65,7 +65,11 @@ io.on('connection', (socket) => {
   });
 
   socket.on('delete group chat', (groupChat) => {
-    socket.broadcast.emit('update group chats', groupChat);
+    socket.broadcast.emit('remove group chat', groupChat);
+  });
+
+  socket.on('create group chat', (members, newGroupChat) => {
+    socket.broadcast.emit('add group chat', members, newGroupChat);
   });
 
   // Handle group chats
