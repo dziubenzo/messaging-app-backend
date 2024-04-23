@@ -108,7 +108,7 @@ export const getGroupChatMessages = [
       { _id: groupChatID },
       '-_id messages'
     )
-      .populate('messages.sender', 'username')
+      .populate('messages.sender', 'username user_id')
       .lean()
       .exec();
 

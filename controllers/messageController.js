@@ -23,11 +23,11 @@ export const getMessages = [
     // Get messages from user A to user B and from user B to user A
     const [messagesSent, messagesReceived] = await Promise.all([
       Message.find({ sender: from, recipient: to })
-        .populate('sender', 'username')
+        .populate('sender', 'username user_id')
         .lean()
         .exec(),
       Message.find({ sender: to, recipient: from })
-        .populate('sender', 'username')
+        .populate('sender', 'username user_id')
         .lean()
         .exec(),
     ]);
