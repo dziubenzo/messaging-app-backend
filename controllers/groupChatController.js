@@ -62,9 +62,12 @@ export const postCreateGroupChat = [
       members,
     });
 
-    await newGroupChat.save();
+    // Save new group chat to DB and return it with populated members field
+    const newGroupChatPopulated = await (
+      await newGroupChat.save()
+    ).populate('members', 'username user_id');
 
-    return res.json('Group chat created successfully!');
+    return res.json(newGroupChatPopulated);
   }),
 ];
 
