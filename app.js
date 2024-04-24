@@ -60,8 +60,9 @@ io.on('connection', (socket) => {
     );
   });
 
-  socket.on('send message', (fromId, toId, message) => {
+  socket.on('send message', (fromId, toId, message, username) => {
     socket.broadcast.emit('receive message', fromId, toId, message);
+    socket.broadcast.emit('show new message toast', toId, username);
   });
 
   socket.on('delete group chat', (groupChat) => {
