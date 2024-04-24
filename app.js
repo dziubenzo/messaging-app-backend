@@ -60,8 +60,8 @@ io.on('connection', (socket) => {
     );
   });
 
-  socket.on('send message', (userId, message) => {
-    socket.broadcast.emit('receive message', userId, message);
+  socket.on('send message', (fromId, toId, message) => {
+    socket.broadcast.emit('receive message', fromId, toId, message);
   });
 
   socket.on('delete group chat', (groupChat) => {
@@ -70,6 +70,16 @@ io.on('connection', (socket) => {
 
   socket.on('create group chat', (members, newGroupChat) => {
     socket.broadcast.emit('add group chat', members, newGroupChat);
+  });
+
+  socket.on('user is typing (DM)', (fromId, toId, username, isTyping) => {
+    socket.broadcast.emit(
+      'show/hide isTyping (DM)',
+      fromId,
+      toId,
+      username,
+      isTyping
+    );
   });
 
   // Handle group chats
@@ -82,6 +92,18 @@ io.on('connection', (socket) => {
       .to(groupChatId)
       .emit('receive group chat message', groupChatId, message);
   });
+
+  socket.on(
+    'user is typing (group chat)',
+    (groupChatId, username, isTyping) => {
+      socket.broadcast.emit(
+        'show/hide isTyping (group chat)',
+        groupChatId,
+        username,
+        isTyping
+      );
+    }
+  );
 });
 
 app.use(cors(corsOptions));
