@@ -157,7 +157,7 @@ export const postCreateGroupChatMessage = [
           messages: newMessage,
         },
       },
-      { new: true, upsert: true }
+      { new: true }
     ).populate('messages.sender', 'username');
 
     // Return added message
