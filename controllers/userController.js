@@ -1,4 +1,5 @@
 import User from '../models/User.js';
+import GroupChat from '../models/GroupChat.js';
 
 import asyncHandler from 'express-async-handler';
 import { body, validationResult } from 'express-validator';
@@ -79,7 +80,19 @@ export const postCreateUser = [
       password: hashedPassword,
     });
 
-    await newUser.save();
+    // Save user and add them to General group chat
+    await Promise.all([
+      newUser.save(),
+      GroupChat.findOneAndUpdate(
+        { name: 'General' },
+        {
+          $push: {
+            members: newUser._id,
+          },
+        },
+        { new: true }
+      ),
+    ]);
 
     return res.json('User created successfully!');
   }),
