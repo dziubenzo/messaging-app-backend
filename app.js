@@ -83,6 +83,10 @@ io.on('connection', (socket) => {
     );
   });
 
+  socket.on('user registers', (username) => {
+    socket.broadcast.emit('show new user toast', username);
+  });
+
   // Handle group chats
   socket.on('open group chat', (groupChatId) => {
     socket.join(groupChatId);
