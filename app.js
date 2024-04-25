@@ -124,10 +124,10 @@ async function main() {
   await mongoose.connect(mongoDB);
 }
 
-// Rate limiter: maximum of forty requests per minute
+// Rate limiter: maximum of sixty requests per minute
 const limiter = RateLimit({
   windowMs: 1 * 60 * 1000,
-  max: 40,
+  max: 60,
   validate: { xForwardedForHeader: false },
 });
 
@@ -148,10 +148,7 @@ app.use(
 app.use(passport.session());
 app.use(compression());
 app.use(helmet());
-/* 
-ENABLE LATER
-*/
-// app.use(limiter);
+app.use(limiter);
 
 passport.use(localStrategy);
 passport.serializeUser(serialiseFunction);
