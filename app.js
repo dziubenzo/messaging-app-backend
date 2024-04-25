@@ -29,7 +29,7 @@ import groupChatRouter from './routes/groupChat.js';
 // CORS options - allowed site(s)
 // No '/' at the end
 const corsOptions = {
-  origin: 'http://localhost:5173',
+  origin: 'https://dziubenzo-messaging-app.netlify.app',
   credentials: true,
 };
 
@@ -38,7 +38,7 @@ const app = express();
 // Initialise both http and Socket.IO servers
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
-  cors: { origin: 'http://localhost:5173' },
+  cors: { origin: 'https://dziubenzo-messaging-app.netlify.app' },
 });
 
 // Socket.IO event listeners and emitters
