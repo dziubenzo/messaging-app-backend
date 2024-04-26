@@ -26,10 +26,16 @@ import userRouter from './routes/user.js';
 import messageRouter from './routes/message.js';
 import groupChatRouter from './routes/groupChat.js';
 
+// Frontend URL
+const FRONTEND_URL =
+  process.env.NODE_ENV === 'production'
+    ? 'https://dziubenzo-messaging-app.netlify.app'
+    : 'http://localhost:5173';
+
 // CORS options - allowed site(s)
 // No '/' at the end
 const corsOptions = {
-  origin: 'https://dziubenzo-messaging-app.netlify.app',
+  origin: FRONTEND_URL,
   credentials: true,
 };
 
@@ -38,7 +44,7 @@ const app = express();
 // Initialise both http and Socket.IO servers
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
-  cors: { origin: 'https://dziubenzo-messaging-app.netlify.app' },
+  cors: { origin: FRONTEND_URL },
 });
 
 // Socket.IO event listeners and emitters
@@ -143,8 +149,8 @@ app.use(
     saveUninitialized: true,
     cookie: {
       maxAge: 1000 * 60 * 60 * 24 * 3, // 3 days
-      secure: true,
-      sameSite: 'none',
+      secure: process.env.NODE_ENV === 'production' ? true : false,
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : false,
     },
     store: MongoStore.create({ mongoUrl: mongoDB }),
   })
