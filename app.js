@@ -134,6 +134,7 @@ const limiter = RateLimit({
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+// This ensures that the Set-Cookie header is sent and the cookie is set on the client after deployment
 app.set('trust proxy', 1);
 app.use(
   session({
