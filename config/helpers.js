@@ -9,3 +9,8 @@ export const getUserId = () => {
   const max = Math.floor(9999999);
   return Math.floor(Math.random() * (max - min + 1)) + min;
 };
+
+// Check for production environment
+export const isProduction = () => {
+  return process.env.NODE_ENV === 'production';
+};

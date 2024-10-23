@@ -1,36 +1,35 @@
-import express from 'express';
-import 'dotenv/config.js';
-import cors from 'cors';
 import compression from 'compression';
-import helmet from 'helmet';
-import mongoose from 'mongoose';
-import RateLimit from 'express-rate-limit';
 import MongoStore from 'connect-mongo';
-
-// Socket.IO imports
+import cors from 'cors';
+import 'dotenv/config.js';
+import express from 'express';
+import RateLimit from 'express-rate-limit';
+import helmet from 'helmet';
 import { createServer } from 'http';
-import { Server } from 'socket.io';
+import { isProduction } from './config/helpers.js';
+import './config/mongoDB.js';
+import { mongoDB } from './config/mongoDB.js';
+import initialiseSocketIO from './config/socketIO.js';
 
 // Passport imports
 import session from 'express-session';
 import passport from 'passport';
 import {
+  deserialiseFunction,
   localStrategy,
   serialiseFunction,
-  deserialiseFunction,
 } from './config/passport.js';
 
 // Route imports
-import indexRouter from './routes/index.js';
-import userRouter from './routes/user.js';
-import messageRouter from './routes/message.js';
 import groupChatRouter from './routes/groupChat.js';
+import indexRouter from './routes/index.js';
+import messageRouter from './routes/message.js';
+import userRouter from './routes/user.js';
 
 // Frontend URL
-const FRONTEND_URL =
-  process.env.NODE_ENV === 'production'
-    ? 'https://dziubenzo-messaging-app.netlify.app'
-    : 'http://localhost:5173';
+export const FRONTEND_URL = isProduction()
+  ? 'https://dziubenzo-messaging-app.netlify.app'
+  : ['http://localhost:5173', 'http://192.168.0.13:5173'];
 
 // CORS options - allowed site(s)
 // No '/' at the end
@@ -39,97 +38,6 @@ const corsOptions = {
   credentials: true,
 };
 
-const app = express();
-
-// Initialise both http and Socket.IO servers
-const httpServer = createServer(app);
-const io = new Server(httpServer, {
-  cors: { origin: FRONTEND_URL },
-});
-
-// Socket.IO event listeners and emitters
-io.on('connection', (socket) => {
-  // Send back what's been sent by the sender to every socket except for the sender
-  socket.on('change status icon', (userId, imageURL) => {
-    if (!userId || !imageURL) {
-      return;
-    }
-    socket.broadcast.emit('update status icon', userId, imageURL);
-  });
-
-  socket.on('change username/text status', (userId, username, textStatus) => {
-    socket.broadcast.emit(
-      'update username/text status',
-      userId,
-      username,
-      textStatus
-    );
-  });
-
-  socket.on('send message', (fromId, toId, message, username) => {
-    socket.broadcast.emit('receive message', fromId, toId, message);
-    socket.broadcast.emit('show new message toast', toId, username);
-  });
-
-  socket.on('delete group chat', (groupChat) => {
-    socket.broadcast.emit('remove group chat', groupChat);
-  });
-
-  socket.on('create group chat', (members, newGroupChat) => {
-    socket.broadcast.emit('add group chat', members, newGroupChat);
-  });
-
-  socket.on('user is typing (DM)', (fromId, toId, username, isTyping) => {
-    socket.broadcast.emit(
-      'show/hide isTyping (DM)',
-      fromId,
-      toId,
-      username,
-      isTyping
-    );
-  });
-
-  socket.on('user registers', (username) => {
-    socket.broadcast.emit('show new user toast', username);
-  });
-
-  // Handle group chats
-  socket.on('open group chat', (groupChatId) => {
-    socket.join(groupChatId);
-  });
-
-  socket.on('send group chat message', (groupChatId, message) => {
-    socket
-      .to(groupChatId)
-      .emit('receive group chat message', groupChatId, message);
-  });
-
-  socket.on(
-    'user is typing (group chat)',
-    (groupChatId, username, isTyping) => {
-      socket.broadcast.emit(
-        'show/hide isTyping (group chat)',
-        groupChatId,
-        username,
-        isTyping
-      );
-    }
-  );
-});
-
-app.use(cors(corsOptions));
-
-// MongoDB connection
-mongoose.set('strictQuery', false);
-
-const mongoDB = process.env.MONGODB_URI;
-
-main().catch((err) => console.log(err));
-
-async function main() {
-  await mongoose.connect(mongoDB);
-}
-
 // Rate limiter: maximum of sixty requests per minute
 const limiter = RateLimit({
   windowMs: 1 * 60 * 1000,
@@ -137,7 +45,14 @@ const limiter = RateLimit({
   validate: { xForwardedForHeader: false },
 });
 
+const app = express();
+
+// Initialise both http and Socket.IO servers
+const httpServer = createServer(app);
+initialiseSocketIO(httpServer, FRONTEND_URL);
+
 // Middleware
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 // This ensures that the Set-Cookie header is sent and the cookie is set on the client after deployment
@@ -149,8 +64,8 @@ app.use(
     saveUninitialized: true,
     cookie: {
       maxAge: 1000 * 60 * 60 * 24 * 3, // 3 days
-      secure: process.env.NODE_ENV === 'production' ? true : false,
-      sameSite: process.env.NODE_ENV === 'production' ? 'none' : false,
+      secure: isProduction() ? true : false,
+      sameSite: isProduction() ? 'none' : false,
     },
     store: MongoStore.create({ mongoUrl: mongoDB }),
   })
@@ -158,7 +73,8 @@ app.use(
 app.use(passport.session());
 app.use(compression());
 app.use(helmet());
-app.use(limiter);
+
+if (isProduction()) app.use(limiter);
 
 passport.use(localStrategy);
 passport.serializeUser(serialiseFunction);
@@ -178,6 +94,12 @@ app.use((err, req, res, next) => {
 });
 
 // Server listener
-httpServer.listen(process.env.PORT, () => {
-  console.log(`Server listening on port ${process.env.PORT}...`);
-});
+if (isProduction()) {
+  httpServer.listen(process.env.PORT, () => {
+    console.log(`Server listening on port ${process.env.PORT}...`);
+  });
+} else {
+  httpServer.listen(process.env.PORT, '192.168.0.13', () => {
+    console.log(`Server listening on port ${process.env.PORT}...`);
+  });
+}
