@@ -1,12 +1,12 @@
 import { Router } from 'express';
-import { isAuth } from '../config/passport.js';
+import { isAuth } from '../config/passport';
 import {
   deleteGroupChat,
   getGroupChatMessages,
   getGroupChats,
   postCreateGroupChat,
   postCreateGroupChatMessage,
-} from '../controllers/groupChatController.js';
+} from '../controllers/groupChatController';
 
 const router = Router();
 

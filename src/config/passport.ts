@@ -1,14 +1,8 @@
 import bcrypt from 'bcryptjs';
+import type { NextFunction, Request, Response } from 'express';
 import type { ObjectId } from 'mongoose';
 import { Strategy as LocalStrategy } from 'passport-local';
-import User from '../models/User.js';
-import type { NextFunction, Request, Response } from 'express';
-
-declare namespace Express {
-  interface User {
-    id?: ObjectId;
-  }
-}
+import User from '../models/User';
 
 // Local strategy
 export const localStrategy = new LocalStrategy(

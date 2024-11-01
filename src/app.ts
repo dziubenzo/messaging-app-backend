@@ -7,10 +7,10 @@ import express from 'express';
 import RateLimit from 'express-rate-limit';
 import helmet from 'helmet';
 import { createServer } from 'http';
-import { isProduction } from './config/helpers.js';
-import './config/mongoDB.js';
-import { mongoDB } from './config/mongoDB.js';
-import initialiseSocketIO from './config/socketIO.js';
+import { isProduction } from './config/helpers';
+import './config/mongoDB';
+import { mongoDB } from './config/mongoDB';
+import initialiseSocketIO from './config/socketIO';
 
 // Passport imports
 import session from 'express-session';
@@ -19,13 +19,13 @@ import {
   deserialiseFunction,
   localStrategy,
   serialiseFunction,
-} from './config/passport.js';
+} from './config/passport';
 
 // Route imports
-import groupChatRouter from './routes/groupChat.js';
-import indexRouter from './routes/index.js';
-import messageRouter from './routes/message.js';
-import userRouter from './routes/user.js';
+import groupChatRouter from './routes/groupChat';
+import indexRouter from './routes/index';
+import messageRouter from './routes/message';
+import userRouter from './routes/user';
 
 // Frontend URL
 export const FRONTEND_URL = isProduction()

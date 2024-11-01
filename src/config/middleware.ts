@@ -1,6 +1,6 @@
 import { Meta } from 'express-validator';
-import GroupChat from '../models/GroupChat.js';
-import User from '../models/User.js';
+import GroupChat from '../models/GroupChat';
+import User from '../models/User';
 
 // Check if the username provided is available (case-insensitive)
 export const checkUsernameAvailability = async (value: string) => {

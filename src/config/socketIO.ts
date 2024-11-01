@@ -1,8 +1,8 @@
-import { Server as HttpServer, IncomingMessage, ServerResponse } from 'http';
+import { Server as HttpServer } from 'http';
 import { Server } from 'socket.io';
 
 export default function initialiseSocketIO(
-  httpServer: HttpServer<typeof IncomingMessage, typeof ServerResponse>,
+  httpServer: HttpServer,
   allowedURLs: string | string[]
 ) {
   const io = new Server(httpServer, {

@@ -1,9 +1,9 @@
 import { Router } from 'express';
-import { isAuth } from '../config/passport.js';
+import { isAuth } from '../config/passport';
 import {
   getMessages,
   postCreateMessage,
-} from '../controllers/messageController.js';
+} from '../controllers/messageController';
 
 const router = Router();
 
