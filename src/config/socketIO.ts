@@ -1,6 +1,10 @@
+import { Server as HttpServer, IncomingMessage, ServerResponse } from 'http';
 import { Server } from 'socket.io';
 
-export default function initialiseSocketIO(httpServer, allowedURLs) {
+export default function initialiseSocketIO(
+  httpServer: HttpServer<typeof IncomingMessage, typeof ServerResponse>,
+  allowedURLs: string | string[]
+) {
   const io = new Server(httpServer, {
     cors: { origin: allowedURLs },
   });

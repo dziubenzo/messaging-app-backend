@@ -1,6 +1,14 @@
-import LocalStrategy from 'passport-local';
-import User from '../models/User.js';
 import bcrypt from 'bcryptjs';
+import type { ObjectId } from 'mongoose';
+import { Strategy as LocalStrategy } from 'passport-local';
+import User from '../models/User.js';
+import type { NextFunction, Request, Response } from 'express';
+
+declare namespace Express {
+  interface User {
+    id?: ObjectId;
+  }
+}
 
 // Local strategy
 export const localStrategy = new LocalStrategy(
@@ -22,12 +30,18 @@ export const localStrategy = new LocalStrategy(
 );
 
 // Serialise function
-export const serialiseFunction = (user, done) => {
+export const serialiseFunction = (
+  user: Express.User,
+  done: (err: any, id?: unknown) => void
+) => {
   done(null, user.id);
 };
 
 // Deserialise function
-export const deserialiseFunction = async (id, done) => {
+export const deserialiseFunction = async (
+  id: ObjectId,
+  done: (err: any, user?: Express.User | false | null) => void
+) => {
   try {
     const user = await User.findById(id);
     done(null, user);
@@ -37,12 +51,11 @@ export const deserialiseFunction = async (id, done) => {
 };
 
 // Check if user authenticated
-export const isAuth = (req, res, next) => {
+export const isAuth = (req: Request, res: Response, next: NextFunction) => {
   if (req.isAuthenticated()) {
     next();
   } else {
-    return res
-      .status(401)
-      .json('You are not authorised to access this resource');
+    res.status(401).json('You are not authorised to access this resource');
+    return;
   }
 };

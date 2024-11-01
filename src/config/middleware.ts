@@ -1,8 +1,9 @@
-import User from '../models/User.js';
+import { Meta } from 'express-validator';
 import GroupChat from '../models/GroupChat.js';
+import User from '../models/User.js';
 
 // Check if the username provided is available (case-insensitive)
-export const checkUsernameAvailability = async (value) => {
+export const checkUsernameAvailability = async (value: string) => {
   const usernameTaken = await User.exists({
     username: { $regex: value, $options: 'i' },
   })
@@ -16,7 +17,8 @@ export const checkUsernameAvailability = async (value) => {
 
 // Check username to be updated for availability
 // Pass through the case when username is equal to user's current username
-export const checkUpdatedUsername = async (value, { req }) => {
+export const checkUpdatedUsername = async (value: string, meta: Meta) => {
+  const req = meta.req;
   const user = await User.findOne(
     {
       username: { $regex: value, $options: 'i' },
@@ -35,12 +37,13 @@ export const checkUpdatedUsername = async (value, { req }) => {
 };
 
 // Check if passwords match
-export const checkPasswordsEquality = (value, { req }) => {
+export const checkPasswordsEquality = (value: string, meta: Meta) => {
+  const req = meta.req;
   return value === req.body.password;
 };
 
 // Check if the group chat name provided is available (case-insensitive)
-export const checkNameAvailability = async (value) => {
+export const checkNameAvailability = async (value: string) => {
   const nameTaken = await GroupChat.exists({
     name: { $regex: value, $options: 'i' },
   })

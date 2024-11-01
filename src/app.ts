@@ -2,6 +2,7 @@ import compression from 'compression';
 import MongoStore from 'connect-mongo';
 import cors from 'cors';
 import 'dotenv/config.js';
+import type { NextFunction, Request, Response } from 'express';
 import express from 'express';
 import RateLimit from 'express-rate-limit';
 import helmet from 'helmet';
@@ -59,7 +60,7 @@ app.use(express.urlencoded({ extended: false }));
 app.set('trust proxy', 1);
 app.use(
   session({
-    secret: process.env.SECRET,
+    secret: process.env.SECRET!,
     resave: false,
     saveUninitialized: true,
     cookie: {
@@ -87,10 +88,11 @@ app.use('/messages', messageRouter);
 app.use('/group-chats', groupChatRouter);
 
 // Error handler
-app.use((err, req, res, next) => {
-  return res.status(500).json({
+app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
+  res.status(500).json({
     message: `ERROR: ${err.message}`,
   });
+  return;
 });
 
 // Server listener
@@ -99,7 +101,7 @@ if (isProduction()) {
     console.log(`Server listening on port ${process.env.PORT}...`);
   });
 } else {
-  httpServer.listen(process.env.PORT, '192.168.0.13', () => {
+  httpServer.listen(parseInt(process.env.PORT!), '192.168.0.13', 511, () => {
     console.log(`Server listening on port ${process.env.PORT}...`);
   });
 }
