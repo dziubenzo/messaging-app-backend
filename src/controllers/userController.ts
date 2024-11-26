@@ -67,8 +67,16 @@ export const postCreateUser = [
       return;
     }
 
-    // Get all user ids from DB
-    const userIds = await User.find({}, '-_id user_id').lean().exec();
+    // Get all user ids from DB as an array of objects and convert them to an array of numbers only
+    const userIds = await User.find({}, '-_id user_id')
+      .lean()
+      .exec()
+      .then((userIdsObjects) =>
+        userIdsObjects.reduce((array: number[], userId) => {
+          array.push(userId.user_id);
+          return array;
+        }, [])
+      );
 
     // Generate unique user id
     let userId: number;
