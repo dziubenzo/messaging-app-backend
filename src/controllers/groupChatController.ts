@@ -148,44 +148,6 @@ export const deleteGroupChat = [
   }),
 ];
 
-// GET group chat messages
-export const getGroupChatMessages = [
-  param('groupChatId').isMongoId().withMessage('Invalid URL parameter'),
-
-  asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
-    const errors = validationResult(req);
-
-    if (!errors.isEmpty()) {
-      // Return the first validation error message if there are any errors
-      const firstErrorMsg = getFirstErrorMsg(errors);
-      res.status(400).json(firstErrorMsg);
-      return;
-    }
-
-    const groupChatId = req.params.groupChatId;
-
-    const groupChat = await GroupChat.findOne(
-      { _id: groupChatId },
-      '-_id messages'
-    )
-      .populate('messages.sender', 'username user_id')
-      .lean()
-      .exec();
-
-    if (!groupChat) {
-      res
-        .status(400)
-        .json(
-          `Failed to retrieve messages of group chat with id ${groupChatId}`
-        );
-      return;
-    }
-
-    res.json(groupChat.messages);
-    return;
-  }),
-];
-
 // POST create group chat message
 export const postCreateGroupChatMessage = [
   param('groupChatId').isMongoId().withMessage('Invalid URL parameter'),
