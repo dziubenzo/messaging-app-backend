@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { isAuth } from '../config/passport';
 import {
   deleteGroupChat,
+  getGroupChat,
   getGroupChatMessages,
   getGroupChats,
   postCreateGroupChat,
@@ -14,6 +15,9 @@ router.use(isAuth);
 
 // GET group chats
 router.get('/', getGroupChats);
+
+// GET group chat
+router.get('/:groupChatName', getGroupChat);
 
 // POST create group chat
 router.post('/', postCreateGroupChat);

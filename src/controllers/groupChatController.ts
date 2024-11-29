@@ -31,6 +31,50 @@ export const getGroupChats = [
   }),
 ];
 
+// GET group chat
+export const getGroupChat = [
+  param('groupChatName').isString().withMessage('Invalid group chat name'),
+
+  asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+      // Return the first validation error message if there are any errors
+      const firstErrorMsg = getFirstErrorMsg(errors);
+      res.status(400).json(firstErrorMsg);
+      return;
+    }
+
+    const groupChatName = req.params.groupChatName;
+
+    // Query group chat with members and messages from DB
+    const groupChat = await GroupChat.findOne({
+      name: { $regex: groupChatName, $options: 'i' },
+    })
+      .populate([
+        {
+          path: 'members',
+          select: ['user_id', 'username'],
+        },
+        {
+          path: 'messages.sender',
+          select: ['user_id', 'username'],
+        },
+      ])
+      .lean()
+      .exec();
+
+    if (!groupChat) {
+      res
+        .status(400)
+        .json(`Failed to find group chat with name ${groupChatName}`);
+      return;
+    }
+
+    res.json(groupChat);
+  }),
+];
+
 // POST create group chat
 export const postCreateGroupChat = [
   body('name')
