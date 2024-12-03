@@ -5,7 +5,7 @@ import User from '../models/User';
 // Check if the username provided is available (case-insensitive)
 export const checkUsernameAvailability = async (value: string) => {
   const usernameTaken = await User.exists({
-    username: { $regex: value, $options: 'i' },
+    username: { $regex: new RegExp(`${value}$`), $options: 'i' },
   })
     .lean()
     .exec();

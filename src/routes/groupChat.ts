@@ -3,10 +3,9 @@ import { isAuth } from '../config/passport';
 import {
   deleteGroupChat,
   getGroupChat,
-  getGroupChatMessages,
   getGroupChats,
   postCreateGroupChat,
-  postCreateGroupChatMessage,
+  postCreateGroupChatMessage
 } from '../controllers/groupChatController';
 
 const router = Router();
