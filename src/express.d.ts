@@ -1,4 +1,4 @@
-// Provides types for req.user and for Passport serialize/deserialize functions
+// Provides types for req.user
 // User interface is empty by default
 
 declare global {

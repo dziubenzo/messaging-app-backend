@@ -9,10 +9,8 @@ const router = Router();
 
 router.use(checkAuth);
 
-// GET messages user A <> user B
 router.get('/', getMessages);
 
-// POST create message
 router.post('/', postCreateMessage);
 
 export default router;

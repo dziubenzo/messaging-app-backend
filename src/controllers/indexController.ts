@@ -1,11 +1,11 @@
-import type { NextFunction, Request, Response } from 'express';
+import type { Request, Response } from 'express';
 import asyncHandler from 'express-async-handler';
 
-export const index = asyncHandler(
-  async (req: Request, res: Response, next: NextFunction) => {
-    res.json({
-      project: 'Messaging App',
-      author: 'dziubenzo',
-    });
-  }
-);
+// @desc    Root path
+// @route   ALL /
+export const index = asyncHandler(async (req: Request, res: Response) => {
+  res.json({
+    project: 'Talky-Talky!',
+    author: 'dziubenzo',
+  });
+});

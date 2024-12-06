@@ -1,15 +1,15 @@
-import type { NextFunction, Request, Response } from 'express';
-import Message from '../models/Message';
-
+import type { Request, Response } from 'express';
 import asyncHandler from 'express-async-handler';
 import { body, query, validationResult } from 'express-validator';
 import { getFirstErrorMsg } from '../config/helpers';
+import Message from '../models/Message';
 
-// GET messages user A <> user B
+// @desc    Get messages user A <> user B
+// @route   GET /messages
 export const getMessages = [
   query('from').isMongoId().withMessage('Invalid query parameter (from)'),
   query('to').isMongoId().withMessage('Invalid query parameter (to)'),
-  asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+  asyncHandler(async (req: Request, res: Response) => {
     const errors = validationResult(req);
 
     if (!errors.isEmpty()) {
@@ -44,7 +44,8 @@ export const getMessages = [
   }),
 ];
 
-// POST create message
+// @desc    Create message
+// @route   POST /messages
 export const postCreateMessage = [
   body('sender')
     .isMongoId()
@@ -57,7 +58,7 @@ export const postCreateMessage = [
     .isLength({ min: 1, max: 5000 })
     .withMessage('Message must be present and cannot exceed 5000 characters'),
 
-  asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+  asyncHandler(async (req: Request, res: Response) => {
     const errors = validationResult(req);
 
     if (!errors.isEmpty()) {

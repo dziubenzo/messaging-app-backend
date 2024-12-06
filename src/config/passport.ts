@@ -13,7 +13,7 @@ const options: StrategyOptionsWithoutRequest = {
 
 export const jwtStrategy = new JwtStrategy(options, async (payload, done) => {
   const match = await User.findOne({ _id: payload.id }, '-password')
-    .populate('contacts')
+    .populate('contacts', '-password')
     .lean()
     .exec();
   if (match) {

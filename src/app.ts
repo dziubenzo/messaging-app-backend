@@ -1,7 +1,7 @@
 import compression from 'compression';
 import cors from 'cors';
 import 'dotenv/config.js';
-import type { NextFunction, Request, Response } from 'express';
+import type { Request, Response } from 'express';
 import express from 'express';
 import RateLimit from 'express-rate-limit';
 import helmet from 'helmet';
@@ -61,7 +61,7 @@ app.use('/messages', messageRouter);
 app.use('/group-chats', groupChatRouter);
 
 // Error handler
-app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
+app.use((err: Error, req: Request, res: Response) => {
   res.status(500).json({
     message: `ERROR: ${err.message}`,
   });

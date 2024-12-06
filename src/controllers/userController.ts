@@ -1,5 +1,5 @@
 import bcrypt from 'bcryptjs';
-import type { NextFunction, Request, Response } from 'express';
+import type { Request, Response } from 'express';
 import asyncHandler from 'express-async-handler';
 import { body, validationResult } from 'express-validator';
 import jwt from 'jsonwebtoken';
@@ -13,16 +13,18 @@ import { checkAuth } from '../config/passport';
 import GroupChat from '../models/GroupChat';
 import User from '../models/User';
 
-// GET all users
+// @desc    Get all users
+// @route   GET /users
 export const getAllUsers = [
   checkAuth,
-  asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+  asyncHandler(async (req: Request, res: Response) => {
     const allUsers = await User.find({}, '-password -contacts').lean().exec();
     res.json(allUsers);
   }),
 ];
 
-// POST create user
+// @desc    Create user
+// @route   POST /users
 export const postCreateUser = [
   body('username')
     .trim()
@@ -43,7 +45,7 @@ export const postCreateUser = [
     .custom(checkPasswordsEquality)
     .withMessage('Passwords do not match'),
 
-  asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+  asyncHandler(async (req: Request, res: Response) => {
     const errors = validationResult(req);
 
     if (!errors.isEmpty()) {
@@ -108,10 +110,11 @@ export const postCreateUser = [
   }),
 ];
 
-// GET user
+// @desc    Get user
+// @route   GET /users/:userId
 export const getUser = [
   checkAuth,
-  asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+  asyncHandler(async (req: Request, res: Response) => {
     const { userId } = req.params;
     const user = await User.findOne({ user_id: userId }, '-id -password')
       .lean()
@@ -126,11 +129,12 @@ export const getUser = [
   }),
 ];
 
-// PUT add contact
+// @desc    Add contact
+// @route   PUT /users/:userId/add-contact
 export const putAddContact = [
   checkAuth,
   body('contact_id').isMongoId().withMessage('Invalid user ID'),
-  asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+  asyncHandler(async (req: Request, res: Response) => {
     const errors = validationResult(req);
 
     if (!errors.isEmpty()) {
@@ -164,11 +168,12 @@ export const putAddContact = [
   }),
 ];
 
-// DELETE remove contact
+// @desc    Remove contact
+// @route   DELETE /users/:userId/remove-contact
 export const deleteRemoveContact = [
   checkAuth,
   body('contact_id').isMongoId().withMessage('Invalid user id'),
-  asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+  asyncHandler(async (req: Request, res: Response) => {
     const errors = validationResult(req);
 
     if (!errors.isEmpty()) {
@@ -197,11 +202,12 @@ export const deleteRemoveContact = [
   }),
 ];
 
-// PUT change status icon
+// @desc    Change status icon
+// @route   PUT /users/:userId/change-status-icon
 export const putChangeStatusIcon = [
   checkAuth,
   body('image_url').isURL().withMessage('Invalid image URL'),
-  asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+  asyncHandler(async (req: Request, res: Response) => {
     const errors = validationResult(req);
 
     if (!errors.isEmpty()) {
@@ -228,7 +234,8 @@ export const putChangeStatusIcon = [
   }),
 ];
 
-// PUT update user
+// @desc    Update user
+// @route   PUT /users/:userId/update
 export const putUpdateUser = [
   checkAuth,
   body('username')
@@ -241,7 +248,7 @@ export const putUpdateUser = [
     .trim()
     .isLength({ max: 70 })
     .withMessage('Status cannot exceed 70 characters'),
-  asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+  asyncHandler(async (req: Request, res: Response) => {
     const errors = validationResult(req);
 
     if (!errors.isEmpty()) {
@@ -272,7 +279,8 @@ export const putUpdateUser = [
   }),
 ];
 
-// POST login user
+// @desc    Log in user
+// @route   POST /users/login
 export const postLoginUser = [
   body('username')
     .trim()
@@ -280,7 +288,7 @@ export const postLoginUser = [
     .withMessage('Username must contain between 3 and 16 characters'),
   body('password').trim(),
 
-  asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+  asyncHandler(async (req: Request, res: Response) => {
     const errors = validationResult(req);
 
     if (!errors.isEmpty()) {
@@ -321,23 +329,11 @@ export const postLoginUser = [
   }),
 ];
 
-// POST logout user
-export const postLogoutUser = [
-  checkAuth,
-  asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
-    req.logout((err) => {
-      if (err) {
-        return next(err);
-      }
-      return res.json('Logout successful');
-    });
-  }),
-];
-
-// POST check auth
+// @desc    Check auth
+// @route   POST /users/auth
 export const postCheckAuth = [
   checkAuth,
-  asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+  asyncHandler(async (req: Request, res: Response) => {
     res.json(req.user);
   }),
 ];

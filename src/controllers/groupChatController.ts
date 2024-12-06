@@ -1,16 +1,16 @@
-import type { NextFunction, Request, Response } from 'express';
-import GroupChat from '../models/GroupChat';
-
+import type { Request, Response } from 'express';
 import asyncHandler from 'express-async-handler';
 import { body, param, query, validationResult } from 'express-validator';
 import { getFirstErrorMsg } from '../config/helpers';
 import { checkNameAvailability } from '../config/middleware';
+import GroupChat from '../models/GroupChat';
 
-// GET group chats
+// @desc    Get all group chats
+// @route   GET /group-chats
 export const getGroupChats = [
   query('member').isMongoId().withMessage('Invalid query parameter'),
 
-  asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+  asyncHandler(async (req: Request, res: Response) => {
     const errors = validationResult(req);
 
     if (!errors.isEmpty()) {
@@ -31,11 +31,12 @@ export const getGroupChats = [
   }),
 ];
 
-// GET group chat
+// @desc    Get group chat
+// @route   GET /group-chats/:groupChatName
 export const getGroupChat = [
   param('groupChatName').isString().withMessage('Invalid group chat name'),
 
-  asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+  asyncHandler(async (req: Request, res: Response) => {
     const errors = validationResult(req);
 
     if (!errors.isEmpty()) {
@@ -75,7 +76,8 @@ export const getGroupChat = [
   }),
 ];
 
-// POST create group chat
+// @desc    Create group chat
+// @route   POST /group-chats
 export const postCreateGroupChat = [
   body('name')
     .trim()
@@ -89,7 +91,7 @@ export const postCreateGroupChat = [
     .withMessage('Members must be an array of at least 3 elements'),
   body('members.*').isMongoId().withMessage('Invalid user ID'),
 
-  asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+  asyncHandler(async (req: Request, res: Response) => {
     const errors = validationResult(req);
 
     if (!errors.isEmpty()) {
@@ -119,11 +121,12 @@ export const postCreateGroupChat = [
   }),
 ];
 
-// DELETE group chat
+// @desc    Delete group chat
+// @route   DELETE /group-chats/:groupChatId
 export const deleteGroupChat = [
   param('groupChatId').isMongoId().withMessage('Invalid URL parameter'),
 
-  asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+  asyncHandler(async (req: Request, res: Response) => {
     const errors = validationResult(req);
 
     if (!errors.isEmpty()) {
@@ -148,7 +151,8 @@ export const deleteGroupChat = [
   }),
 ];
 
-// POST create group chat message
+// @desc    Create group chat message
+// @route   POST /group-chats/:groupChatId/messages
 export const postCreateGroupChatMessage = [
   param('groupChatId').isMongoId().withMessage('Invalid URL parameter'),
   body('sender')
@@ -159,7 +163,7 @@ export const postCreateGroupChatMessage = [
     .isLength({ min: 1, max: 5000 })
     .withMessage('Message must be present and cannot exceed 5000 characters'),
 
-  asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+  asyncHandler(async (req: Request, res: Response) => {
     const errors = validationResult(req);
 
     if (!errors.isEmpty()) {
