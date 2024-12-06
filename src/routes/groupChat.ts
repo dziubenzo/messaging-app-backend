@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { isAuth } from '../config/passport';
+import { checkAuth } from '../config/passport';
 import {
   deleteGroupChat,
   getGroupChat,
@@ -10,7 +10,7 @@ import {
 
 const router = Router();
 
-router.use(isAuth);
+router.use(checkAuth);
 
 // GET group chats
 router.get('/', getGroupChats);

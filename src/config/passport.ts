@@ -1,55 +1,26 @@
-import bcrypt from 'bcryptjs';
-import type { NextFunction, Request, Response } from 'express';
-import type { ObjectId } from 'mongoose';
-import { Strategy as LocalStrategy } from 'passport-local';
-import User from '../models/User';
+import passport from 'passport';
+import {
+  ExtractJwt,
+  Strategy as JwtStrategy,
+  type StrategyOptionsWithoutRequest,
+} from 'passport-jwt';
+import User from '../models/User.js';
 
-// Local strategy
-export const localStrategy = new LocalStrategy(
-  async (username, password, done) => {
-    try {
-      const user = await User.findOne({ username: username });
-      if (!user) {
-        return done(null, false);
-      }
-      const match = await bcrypt.compare(password, user.password);
-      if (!match) {
-        return done(null, false);
-      }
-      return done(null, user);
-    } catch (err) {
-      return done(err);
-    }
-  }
-);
-
-// Serialise function
-export const serialiseFunction = (
-  user: Express.User,
-  done: (err: any, id?: unknown) => void
-) => {
-  done(null, user.id);
+const options: StrategyOptionsWithoutRequest = {
+  jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+  secretOrKey: process.env.SECRET!,
 };
 
-// Deserialise function
-export const deserialiseFunction = async (
-  id: ObjectId,
-  done: (err: any, user?: Express.User | false | null) => void
-) => {
-  try {
-    const user = await User.findById(id);
-    done(null, user);
-  } catch (err) {
-    done(err);
+export const jwtStrategy = new JwtStrategy(options, async (payload, done) => {
+  const match = await User.findOne({ _id: payload.id }, '-password')
+    .populate('contacts')
+    .lean()
+    .exec();
+  if (match) {
+    return done(null, match);
   }
-};
+  return done(null, false);
+});
 
-// Check if user authenticated
-export const isAuth = (req: Request, res: Response, next: NextFunction) => {
-  if (req.isAuthenticated()) {
-    next();
-  } else {
-    res.status(401).json('You are not authorised to access this resource');
-    return;
-  }
-};
+// Check if user is authenticated
+export const checkAuth = passport.authenticate('jwt', { session: false });

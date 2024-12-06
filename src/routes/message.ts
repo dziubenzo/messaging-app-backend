@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { isAuth } from '../config/passport';
+import { checkAuth } from '../config/passport';
 import {
   getMessages,
   postCreateMessage,
@@ -7,7 +7,7 @@ import {
 
 const router = Router();
 
-router.use(isAuth);
+router.use(checkAuth);
 
 // GET messages user A <> user B
 router.get('/', getMessages);

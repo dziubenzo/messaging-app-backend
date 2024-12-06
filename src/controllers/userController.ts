@@ -1,22 +1,21 @@
+import bcrypt from 'bcryptjs';
 import type { NextFunction, Request, Response } from 'express';
-import User from '../models/User';
-import GroupChat from '../models/GroupChat';
-
 import asyncHandler from 'express-async-handler';
 import { body, validationResult } from 'express-validator';
-import bcrypt from 'bcryptjs';
-import passport from 'passport';
+import jwt from 'jsonwebtoken';
+import { getFirstErrorMsg, getUserId } from '../config/helpers';
 import {
   checkPasswordsEquality,
-  checkUsernameAvailability,
   checkUpdatedUsername,
+  checkUsernameAvailability,
 } from '../config/middleware';
-import { getFirstErrorMsg, getUserId } from '../config/helpers';
-import { isAuth } from '../config/passport';
+import { checkAuth } from '../config/passport';
+import GroupChat from '../models/GroupChat';
+import User from '../models/User';
 
 // GET all users
 export const getAllUsers = [
-  isAuth,
+  checkAuth,
   asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
     const allUsers = await User.find({}, '-password -contacts').lean().exec();
     res.json(allUsers);
@@ -111,7 +110,7 @@ export const postCreateUser = [
 
 // GET user
 export const getUser = [
-  isAuth,
+  checkAuth,
   asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
     const { userId } = req.params;
     const user = await User.findOne({ user_id: userId }, '-id -password')
@@ -129,7 +128,7 @@ export const getUser = [
 
 // PUT add contact
 export const putAddContact = [
-  isAuth,
+  checkAuth,
   body('contact_id').isMongoId().withMessage('Invalid user ID'),
   asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
     const errors = validationResult(req);
@@ -167,7 +166,7 @@ export const putAddContact = [
 
 // DELETE remove contact
 export const deleteRemoveContact = [
-  isAuth,
+  checkAuth,
   body('contact_id').isMongoId().withMessage('Invalid user id'),
   asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
     const errors = validationResult(req);
@@ -200,7 +199,7 @@ export const deleteRemoveContact = [
 
 // PUT change status icon
 export const putChangeStatusIcon = [
-  isAuth,
+  checkAuth,
   body('image_url').isURL().withMessage('Invalid image URL'),
   asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
     const errors = validationResult(req);
@@ -231,7 +230,7 @@ export const putChangeStatusIcon = [
 
 // PUT update user
 export const putUpdateUser = [
-  isAuth,
+  checkAuth,
   body('username')
     .trim()
     .isLength({ min: 3, max: 16 })
@@ -275,31 +274,56 @@ export const putUpdateUser = [
 
 // POST login user
 export const postLoginUser = [
-  passport.authenticate('local'),
+  body('username')
+    .trim()
+    .isLength({ min: 3, max: 16 })
+    .withMessage('Username must contain between 3 and 16 characters'),
+  body('password').trim(),
 
   asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
-    // Get logged in user from DB with populated contacts
-    // Populate() method does not work in Local Strategy, meaning req.user does not contain contacts data, so I need to query DB again
-    if (!req.user) {
-      req.logout((err) => {
-        if (err) {
-          return next(err);
-        }
-        return;
-      });
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+      // Return the first validation error message if there are any errors
+      const firstErrorMsg = getFirstErrorMsg(errors);
+      res.status(400).json(firstErrorMsg);
       return;
     }
-    const loggedInUser = await User.findOne(
-      { username: req.user.username },
-      '-password'
-    ).populate({ path: 'contacts', select: '-password' });
-    res.json(loggedInUser);
+
+    const username = req.body.username;
+    const password = req.body.password;
+
+    // Get user from the DB
+    const user = await User.findOne({ username }).exec();
+
+    // Return error message if no user found
+    if (!user) {
+      res.status(401).json('Invalid username and/or password');
+      return;
+    }
+
+    // Compare passwords
+    const passwordsMatch = await bcrypt.compare(password, user.password);
+
+    // Return error message if passwords do not match
+    if (!passwordsMatch) {
+      res.status(401).json('Invalid username and/or password');
+      return;
+    }
+
+    // Create token valid for 3 days if login credentials are valid
+    // Use user's ID as payload
+    const options = { expiresIn: '3 days' };
+    const token = jwt.sign({ id: user._id }, process.env.SECRET!, options);
+
+    // Return token
+    res.json(token);
   }),
 ];
 
 // POST logout user
 export const postLogoutUser = [
-  isAuth,
+  checkAuth,
   asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
     req.logout((err) => {
       if (err) {
@@ -311,25 +335,9 @@ export const postLogoutUser = [
 ];
 
 // POST check auth
-export const postCheckAuth = asyncHandler(
-  async (req: Request, res: Response, next: NextFunction) => {
-    if (req.isAuthenticated()) {
-      if (!req.user) {
-        req.logout((err) => {
-          if (err) {
-            return next(err);
-          }
-          return;
-        });
-        return;
-      }
-      const loggedInUser = await User.findOne(
-        { username: req.user.username },
-        '-password'
-      ).populate({ path: 'contacts', select: '-password' });
-      res.json(loggedInUser);
-    } else {
-      res.status(401).json('You are not authenticated');
-    }
-  }
-);
+export const postCheckAuth = [
+  checkAuth,
+  asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+    res.json(req.user);
+  }),
+];
