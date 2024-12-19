@@ -1,4 +1,7 @@
-import { Result, ValidationError } from 'express-validator';
+import { Result, type ValidationError } from 'express-validator';
+import type { ObjectId } from 'mongoose';
+import User from '../models/User';
+import type { StatusIcon } from './types';
 
 // Get error message of the first validation error
 export const getFirstErrorMsg = (errors: Result<ValidationError>) => {
@@ -15,4 +18,15 @@ export const getUserId = () => {
 // Check for production environment
 export const isProduction = () => {
   return process.env.NODE_ENV === 'production';
+};
+
+// Change user's status icon on certain socket events
+export const updateStatusIcon = async (
+  userMongoId: ObjectId,
+  statusIcon: StatusIcon
+) => {
+  await User.findOneAndUpdate(
+    { _id: userMongoId },
+    { status_icon: statusIcon }
+  );
 };

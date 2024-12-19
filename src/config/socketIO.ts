@@ -1,5 +1,9 @@
 import { Server as HttpServer } from 'http';
+import { ObjectId } from 'mongoose';
 import { Server } from 'socket.io';
+import { STATUS_ICONS } from './constants';
+import { updateStatusIcon } from './helpers';
+import { StatusIcon } from './types';
 
 export default function initialiseSocketIO(
   httpServer: HttpServer,
@@ -11,13 +15,39 @@ export default function initialiseSocketIO(
 
   // Socket.IO event listeners and emitters
   io.on('connection', (socket) => {
-    // Send back what's been sent by the sender to every socket except for the sender
-    socket.on('change status icon', (userId, imageURL) => {
-      if (!userId || !imageURL) {
-        return;
-      }
-      socket.broadcast.emit('update status icon', userId, imageURL);
+    let user: ObjectId | null;
+    
+    // Change user's status icon to available and broadcast that to others
+    socket.on('user is authenticated', async (userId: ObjectId) => {
+      if (!userId) return;
+      // Keep user's MongoDB id for use in other listeners
+      user = userId;
+      await updateStatusIcon(user, STATUS_ICONS.available);
+      socket.broadcast.emit('update status icon', user, STATUS_ICONS.available);
     });
+
+    // Change user's status icon to unavailable and broadcast that to others
+    socket.on('user is not authenticated', async () => {
+      if (!user) return;
+      await updateStatusIcon(user, STATUS_ICONS.unavailable);
+      socket.broadcast.emit(
+        'update status icon',
+        user,
+        STATUS_ICONS.unavailable
+      );
+      user = null;
+    });
+
+    // Send back what's been sent by the sender to every socket except for the sender
+    socket.on(
+      'change status icon',
+      (userId: ObjectId, imageURL: StatusIcon) => {
+        if (!userId || !imageURL) {
+          return;
+        }
+        socket.broadcast.emit('update status icon', userId, imageURL);
+      }
+    );
 
     socket.on('change username/text status', (userId, username, textStatus) => {
       socket.broadcast.emit(
@@ -77,5 +107,17 @@ export default function initialiseSocketIO(
         );
       }
     );
+
+    // Change user's status icon to unavailable and broadcast that to others
+    socket.on('disconnect', async () => {
+      if (!user) return;
+      await updateStatusIcon(user, STATUS_ICONS.unavailable);
+      socket.broadcast.emit(
+        'update status icon',
+        user,
+        STATUS_ICONS.unavailable
+      );
+      user = null;
+    });
   });
 }
