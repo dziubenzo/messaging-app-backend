@@ -5,7 +5,7 @@ import User from '../models/User';
 // Check if the username provided is available (case-insensitive)
 export const checkUsernameAvailability = async (value: string) => {
   const usernameTaken = await User.exists({
-    username: { $regex: new RegExp(`${value}$`), $options: 'i' },
+    username: { $regex: new RegExp(`^${value}$`), $options: 'i' },
   })
     .lean()
     .exec();
@@ -16,12 +16,12 @@ export const checkUsernameAvailability = async (value: string) => {
 };
 
 // Check username to be updated for availability
-// Pass through the case when username is equal to user's current username
+// Pass through the case when username is equal to user's current username but might differ in case
 export const checkUpdatedUsername = async (value: string, meta: Meta) => {
   const req = meta.req;
   const user = await User.findOne(
     {
-      username: { $regex: value, $options: 'i' },
+      username: { $regex: new RegExp(`^${value}$`), $options: 'i' },
     },
     'username'
   )
