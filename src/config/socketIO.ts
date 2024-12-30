@@ -11,19 +11,25 @@ export default function initialiseSocketIO(
 ) {
   const io = new Server(httpServer, {
     cors: { origin: allowedURLs },
+    pingInterval: 4000,
+    pingTimeout: 3000,
   });
 
   // Socket.IO event listeners and emitters
   io.on('connection', (socket) => {
     let user: ObjectId | null;
-    
+
     // Change user's status icon to available and broadcast that to others
     socket.on('user is authenticated', async (userId: ObjectId) => {
-      if (!userId) return;
       // Keep user's MongoDB id for use in other listeners
       user = userId;
       await updateStatusIcon(user, STATUS_ICONS.available);
       socket.broadcast.emit('update status icon', user, STATUS_ICONS.available);
+    });
+
+    // Restore user variable on reconnection
+    socket.on('user reconnects', async (userId: ObjectId) => {
+      user = userId;
     });
 
     // Change user's status icon to unavailable and broadcast that to others
@@ -109,8 +115,10 @@ export default function initialiseSocketIO(
     );
 
     // Change user's status icon to unavailable and broadcast that to others
-    socket.on('disconnect', async () => {
+    socket.on('disconnect', async (reason) => {
       if (!user) return;
+      // Prevent firing the disconnection event upon e.g. changing networks or long idle time
+      if (reason === 'ping timeout') return;
       await updateStatusIcon(user, STATUS_ICONS.unavailable);
       socket.broadcast.emit(
         'update status icon',
