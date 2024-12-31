@@ -30,3 +30,8 @@ export const updateStatusIcon = async (
     { status_icon: statusIcon }
   );
 };
+
+// Get a new user from the database
+export const getNewUser = async (username: string) => {
+  return await User.findOne({ username }, '-password -contacts').lean().exec();
+};

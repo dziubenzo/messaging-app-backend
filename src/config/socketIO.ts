@@ -2,7 +2,7 @@ import { Server as HttpServer } from 'http';
 import { ObjectId } from 'mongoose';
 import { Server } from 'socket.io';
 import { STATUS_ICONS } from './constants';
-import { updateStatusIcon } from './helpers';
+import { getNewUser, updateStatusIcon } from './helpers';
 import { StatusIcon } from './types';
 
 export default function initialiseSocketIO(
@@ -87,8 +87,10 @@ export default function initialiseSocketIO(
       );
     });
 
-    socket.on('user registers', (username) => {
+    socket.on('user registers', async (username) => {
       socket.broadcast.emit('show new user toast', username);
+      const newUser = await getNewUser(username);
+      socket.broadcast.emit('add new user to lists', newUser);
     });
 
     // Handle group chats
