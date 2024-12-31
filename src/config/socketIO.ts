@@ -97,6 +97,12 @@ export default function initialiseSocketIO(
     });
 
     socket.on('send group chat message', (groupChatId, message) => {
+      const senderUsername = message.sender.username;
+      socket.broadcast.emit(
+        'show new group chat message toast',
+        groupChatId,
+        senderUsername
+      );
       socket
         .to(groupChatId)
         .emit('receive group chat message', groupChatId, message);
