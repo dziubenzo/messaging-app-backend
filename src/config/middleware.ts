@@ -45,7 +45,7 @@ export const checkPasswordsEquality = (value: string, meta: Meta) => {
 // Check if the group chat name provided is available (case-insensitive)
 export const checkNameAvailability = async (value: string) => {
   const nameTaken = await GroupChat.exists({
-    name: { $regex: value, $options: 'i' },
+    name: { $regex: new RegExp(`^${value}$`), $options: 'i' },
   })
     .lean()
     .exec();
