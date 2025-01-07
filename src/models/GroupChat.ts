@@ -9,6 +9,10 @@ const GroupChatSchema = new Schema({
     maxLength: 32,
     required: true,
   },
+  slug: {
+    type: String,
+    required: true,
+  },
   created_by: {
     type: Schema.Types.ObjectId,
     ref: 'User',

@@ -14,7 +14,7 @@ router.use(checkAuth);
 
 router.get('/', getGroupChats);
 
-router.get('/:groupChatName', getGroupChat);
+router.get('/:groupChatSlug', getGroupChat);
 
 router.post('/', postCreateGroupChat);
 

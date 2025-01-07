@@ -1,6 +1,7 @@
 import type { Request, Response } from 'express';
 import asyncHandler from 'express-async-handler';
 import { body, param, query, validationResult } from 'express-validator';
+import slugify from 'slugify';
 import { getFirstErrorMsg } from '../config/helpers';
 import { checkNameAvailability } from '../config/middleware';
 import GroupChat from '../models/GroupChat';
@@ -32,9 +33,9 @@ export const getGroupChats = [
 ];
 
 // @desc    Get group chat
-// @route   GET /group-chats/:groupChatName
+// @route   GET /group-chats/:groupChatSlug
 export const getGroupChat = [
-  param('groupChatName').isString().withMessage('Invalid group chat name'),
+  param('groupChatSlug').isString().withMessage('Invalid group chat slug'),
 
   asyncHandler(async (req: Request, res: Response) => {
     const errors = validationResult(req);
@@ -46,11 +47,11 @@ export const getGroupChat = [
       return;
     }
 
-    const groupChatName = req.params.groupChatName;
+    const groupChatSlug = req.params.groupChatSlug;
 
     // Query group chat with members and messages from DB
     const groupChat = await GroupChat.findOne({
-      name: { $regex: groupChatName, $options: 'i' },
+      slug: groupChatSlug,
     })
       .populate([
         {
@@ -68,7 +69,7 @@ export const getGroupChat = [
     if (!groupChat) {
       res
         .status(400)
-        .json(`Failed to find group chat with name ${groupChatName}`);
+        .json(`Failed to find group chat with slug ${groupChatSlug}`);
       return;
     }
 
@@ -88,7 +89,7 @@ export const postCreateGroupChat = [
   body('created_by').isMongoId().withMessage('Invalid user ID'),
   body('members')
     .isArray({ min: 3 })
-    .withMessage('Members must be an array of at least 3 elements'),
+    .withMessage('Select at least two contacts'),
   body('members.*').isMongoId().withMessage('Invalid user ID'),
 
   asyncHandler(async (req: Request, res: Response) => {
@@ -102,11 +103,13 @@ export const postCreateGroupChat = [
     }
 
     const name = req.body.name;
+    const slug = slugify(name, { lower: true });
     const created_by = req.body.created_by;
     const members = req.body.members;
 
     const newGroupChat = new GroupChat({
       name,
+      slug,
       created_by,
       members,
     });
@@ -117,7 +120,6 @@ export const postCreateGroupChat = [
     ).populate('members', 'username user_id');
 
     res.json(newGroupChatPopulated);
-    return;
   }),
 ];
 
@@ -203,6 +205,5 @@ export const postCreateGroupChatMessage = [
 
     // Return added message
     res.json(updatedGroupChat.messages[updatedGroupChat.messages.length - 1]);
-    return;
   }),
 ];
