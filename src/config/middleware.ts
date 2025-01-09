@@ -1,4 +1,4 @@
-import { Meta } from 'express-validator';
+import type { Meta } from 'express-validator';
 import GroupChat from '../models/GroupChat';
 import User from '../models/User';
 
